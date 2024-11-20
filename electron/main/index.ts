@@ -1,123 +1,102 @@
-import { app, BrowserWindow, shell, ipcMain } from 'electron'
-import { createRequire } from 'node:module'
-import { fileURLToPath } from 'node:url'
-import path from 'node:path'
-import os from 'node:os'
-import { update } from './update'
+/* Copyright (c) 2021-2024 Damon Smith */
 
-const require = createRequire(import.meta.url)
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+import { ipcMain, app, crashReporter, webContents } from 'electron';
+import { platform } from 'os';
+import { Application } from './application';
 
-// The built directory structure
-//
-// ├─┬ dist-electron
-// │ ├─┬ main
-// │ │ └── index.js    > Electron-Main
-// │ └─┬ preload
-// │   └── index.mjs   > Preload-Scripts
-// ├─┬ dist
-// │ └── index.html    > Electron-Renderer
-//
-process.env.APP_ROOT = path.join(__dirname, '../..')
+export const isNightly = app.name === 'lunarwolf-nightly';
 
-export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron')
-export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist')
-export const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL
+app.name = isNightly ? 'lunarwolf Nightly' : 'LunarWolf';
 
-process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
-  ? path.join(process.env.APP_ROOT, 'public')
-  : RENDERER_DIST
+app.commandLine.appendSwitch('new-canvas-2d-api');
+app.commandLine.appendSwitch('enable-local-file-accesses');
+app.commandLine.appendSwitch('enable-quic');
+app.commandLine.appendSwitch('enable-ui-devtools');
+app.commandLine.appendSwitch('ignore-gpu-blocklist');
+app.commandLine.appendSwitch('enable-gpu-rasterization');
+app.commandLine.appendSwitch('enable-zero-copy');
+app.commandLine.appendSwitch('enable-webgl-draft-extensions');
+app.commandLine.appendSwitch('enable-transparent-visuals');
+app.commandLine.appendSwitch('disable-background-timer-throttling');
+app.commandLine.appendSwitch('enable-browser-side-compositing');
+app.commandLine.appendSwitch('enable-smooth-scrolling');
+app.commandLine.appendSwitch('enable-experimental-web-platform-features');
+app.commandLine.appendSwitch('fast-tab-windows-close');
+app.commandLine.appendSwitch('enable-tab-discarding');
+app.commandLine.appendSwitch('enable-use-zoom-for-dsf');
+app.commandLine.appendSwitch('disable-gpu-vsync');
+app.commandLine.appendSwitch('enable-begin-frame-scheduling');
+app.commandLine.appendSwitch('disable-frame-rate-limit');
+app.commandLine.appendSwitch('disable-gpu-compositing');
+app.commandLine.appendSwitch('enable-oop-rasterization');
+app.commandLine.appendSwitch('enable-native-gpu-memory-buffers');
+app.commandLine.appendSwitch('enable-gpu-sandbox');
+app.commandLine.appendSwitch('enable-accelerated-video-decoding');
 
-// Disable GPU Acceleration for Windows 7
-if (os.release().startsWith('6.1')) app.disableHardwareAcceleration()
+(process.env as any)['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true;
 
-// Set application name for Windows 10+ notifications
-if (process.platform === 'win32') app.setAppUserModelId(app.getName())
+app.commandLine.appendSwitch('--enable-transparent-visuals');
+app.commandLine.appendSwitch(
+  'enable-features',
+  'CSSColorSchemeUARendering, ImpulseScrollAnimations, ParallelDownloading',
+);
 
-if (!app.requestSingleInstanceLock()) {
-  app.quit()
-  process.exit(0)
+if (process.env.NODE_ENV === 'development') {
+  app.commandLine.appendSwitch('remote-debugging-port', '9222');
 }
 
-let win: BrowserWindow | null = null
-const preload = path.join(__dirname, '../preload/index.mjs')
-const indexHtml = path.join(RENDERER_DIST, 'index.html')
+ipcMain.setMaxListeners(0);
 
-async function createWindow() {
-  win = new BrowserWindow({
-    title: 'Main window',
-    icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico'),
-    webPreferences: {
-      preload,
-      // Warning: Enable nodeIntegration and disable contextIsolation is not secure in production
-      // nodeIntegration: true,
+const application = Application.instance;
+(async () => {
+  await application.start();
+})();
 
-      // Consider using contextBridge.exposeInMainWorld
-      // Read more on https://www.electronjs.org/docs/latest/tutorial/context-isolation
-      // contextIsolation: false,
-    },
-  })
+console.log(app.getPath('crashDumps'))
+crashReporter.start({ submitURL: '', uploadToServer: false })
 
-  if (VITE_DEV_SERVER_URL) { // #298
-    win.loadURL(VITE_DEV_SERVER_URL)
-    // Open devTool if the app is not packaged
-    win.webContents.openDevTools()
-  } else {
-    win.loadFile(indexHtml)
-  }
-
-  // Test actively push message to the Electron-Renderer
-  win.webContents.on('did-finish-load', () => {
-    win?.webContents.send('main-process-message', new Date().toLocaleString())
-  })
-
-  // Make all links open with the browser, not with the application
-  win.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith('https:')) shell.openExternal(url)
-    return { action: 'deny' }
-  })
-
-  // Auto update
-  update(win)
-}
-
-app.whenReady().then(createWindow)
+process.on('uncaughtException', (error) => {
+  console.error(error);
+});
 
 app.on('window-all-closed', () => {
-  win = null
-  if (process.platform !== 'darwin') app.quit()
-})
-
-app.on('second-instance', () => {
-  if (win) {
-    // Focus on the main window if the user tried to open another
-    if (win.isMinimized()) win.restore()
-    win.focus()
+  if (platform() !== 'darwin') {
+    app.quit();
   }
-})
+});
 
-app.on('activate', () => {
-  const allWindows = BrowserWindow.getAllWindows()
-  if (allWindows.length) {
-    allWindows[0].focus()
-  } else {
-    createWindow()
-  }
-})
+ipcMain.on('get-webcontents-id', (e) => {
+  e.returnValue = e.sender.id;
+});
 
-// New window example arg: new windows url
-ipcMain.handle('open-win', (_, arg) => {
-  const childWindow = new BrowserWindow({
-    webPreferences: {
-      preload,
-      nodeIntegration: true,
-      contextIsolation: false,
-    },
-  })
+ipcMain.on('get-window-id', (e) => {
+  e.returnValue = (e.sender as any).windowId;
+});
 
-  if (VITE_DEV_SERVER_URL) {
-    childWindow.loadURL(`${VITE_DEV_SERVER_URL}#${arg}`)
-  } else {
-    childWindow.loadFile(indexHtml, { hash: arg })
-  }
-})
+ipcMain.handle(
+  `web-contents-call`,
+  async (e, { webContentsId, method, args = [] }) => {
+    try {
+      const wc = webContents.fromId(webContentsId);
+      const result = (wc as any)[method](...args);
+
+      if (result) {
+        if (result instanceof Promise) {
+          return await result;
+        }
+
+        return result;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  },
+);
+
+// We need to prevent extension background pages from being garbage collected.
+const backgroundPages: Electron.WebContents[] = [];
+
+app.on('web-contents-created', (e, webContents) => {
+  if (webContents.getType() === 'backgroundPage')
+    backgroundPages.push(webContents);
+});
