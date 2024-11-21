@@ -125,7 +125,6 @@ export class View {
 
     this.webContents.addListener('did-stop-loading', async () => {
       this.webContentsView.setBackgroundColor('#FFFFFFFF');
-      this.updateNavigationState();
       this.emitEvent('loading', false);
       await this.updateURL(this.webContents.getURL());
     });
@@ -133,14 +132,12 @@ export class View {
     this.webContents.addListener('did-start-loading', async () => {
       this.webContentsView.setBackgroundColor('#FFFFFFFF');
       this.hasError = false;
-      this.updateNavigationState();
       this.emitEvent('loading', true);
       await this.updateURL(this.webContents.getURL());
     });
 
     this.webContents.addListener('did-start-navigation', async (e, ...args) => {
       this.webContentsView.setBackgroundColor('#FFFFFFFF');
-      this.updateNavigationState();
 
       this.favicon = '';
 
@@ -237,10 +234,6 @@ export class View {
 
   public get isSelected() {
     return this.id === this.window.viewManager.selectedId;
-  }
-
-  public updateNavigationState() {
-    if (this.webContentsView.webContents.isDestroyed()) return;
   }
 
   public destroy() {

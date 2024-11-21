@@ -1,19 +1,11 @@
 /* Copyright (c) 2021-2024 Damon Smith */
 
-import { dialog, ipcMain } from "electron"
+import { ipcMain } from "electron"
 import { View } from "./view"
 import { AppWindow } from "./windows"
 import { WEBUI_BASE_URL } from "~/constants/files"
 import { TabCreateProperties } from "~/interfaces/tabs"
-
-import {
-    ZOOM_FACTOR_MIN,
-    ZOOM_FACTOR_MAX,
-    ZOOM_FACTOR_INCREMENT
-} from "~/constants/web-contents"
 import { EventEmitter } from "events"
-import { Application } from "./application"
-import { extname } from "path"
 
 export class ViewManager extends EventEmitter {
     public views = new Map<number, View>()
@@ -155,8 +147,6 @@ export class ViewManager extends EventEmitter {
         view.updateBookmark()
 
         await this.fixBounds()
-
-        view.updateNavigationState()
 
         this.emit("activated", id)
     }

@@ -10,8 +10,6 @@ import {
   IRemoveOperation,
   IUpdateOperation,
 } from '~/interfaces';
-import { promises } from 'fs';
-import * as parse from 'node-parse-bookmarks';
 import { Settings } from '../models/settings';
 
 interface Databases {
@@ -49,22 +47,6 @@ export class StorageService {
     ipcMain.handle('storage-update', async (e, data: IUpdateOperation) => {
       return await this.update(data);
     });
-
-    ipcMain.handle('import-bookmarks', async () => {
-      const dialogRes = await dialog.showOpenDialog({
-        filters: [{ name: 'Bookmark file', extensions: ['html'] }],
-      });
-
-      try {
-        const file = await promises.readFile(dialogRes.filePaths[0], 'utf8');
-        return parse(file);
-      } catch (err) {
-        console.error(err);
-      }
-
-      return [];
-    });
-
 
     ipcMain.handle('history-get', () => {
       return '';
