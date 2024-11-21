@@ -1,5 +1,5 @@
 import styled, { css } from 'styled-components';
-import { centerIcon, body2 } from '@/mixins';
+import { centerIcon } from '@/mixins';
 import { ITheme } from '~/interfaces';
 import { DialogStyle } from '@/mixins/dialogs';
 
@@ -8,10 +8,8 @@ export const StyledApp = styled(DialogStyle)`
   padding-bottom: 4px;
 
   ${({ theme }: { theme?: ITheme }) => css`
-    background-color: ${theme['html.backgroundColor']};
-    color: ${theme['html.lightForeground']
-      ? 'rgba(255, 255, 255, 0.87)'
-      : 'black'};
+    background-color: ${theme?.['backgroundColor']};
+    color: 'rgba(255, 255, 255, 0.87)'};
   `}
 `;
 
@@ -49,7 +47,7 @@ export const Input = styled.input.attrs(() => ({
 
   ${({ theme }: { theme?: ITheme }) => css`
     &::placeholder {
-      color: ${theme['html.lightForeground']
+      color: ${theme?.['toolbar.lightForeground']
         ? 'rgba(255, 255, 255, 0.54)'
         : 'rgba(0, 0, 0, 0.54)'};
     }

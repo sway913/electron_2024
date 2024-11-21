@@ -33,8 +33,8 @@ export const WebUIStyle = createGlobalStyle`
     overflow-y: auto;
     ${body2()};
     ${({ theme }: { theme?: ITheme }) => css`
-      background-color: ${theme['pages.backgroundColor']};
-      color: ${theme['pages.textColor']};
+      background-color: ${theme?.['pages.backgroundColor']};
+      color: ${theme?.['pages.textColor']};
     `};
   }
 `;
