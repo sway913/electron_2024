@@ -1,7 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App'
+// import App from './App'
 
+import App from './views/app/components/App';
 import './index.css'
 
 import './demos/ipc'

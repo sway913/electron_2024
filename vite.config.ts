@@ -55,6 +55,12 @@ export default defineConfig(({ command }) => {
           // Preload scripts may contain Web assets, so use the `build.rollupOptions.input` instead `build.lib.entry`.
           input: 'electron/preload/index.ts',
           vite: {
+            resolve: {
+              alias: {
+                '@': path.join(__dirname, 'src'),
+                '~': path.join(__dirname, 'electron'),
+              },
+            },
             build: {
               sourcemap: sourcemap ? 'inline' : undefined, // #332
               minify: isBuild,

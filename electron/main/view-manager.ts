@@ -176,24 +176,24 @@ export class ViewManager extends EventEmitter {
         }
     }
 
-    private async setBoundsListener() {
-        // resize the WebContentsView's height when the toolbar height changes
-        // ex: when the bookmarks bar appears
-        await this.window.webContents.executeJavaScript(`
-        const {ipcRenderer} = require('electron');
-        const resizeObserver = new ResizeObserver(([{ contentRect }]) => {
-          ipcRenderer.send('resize-height');
-        });
-        const app = document.getElementById('app');
-        resizeObserver.observe(app);
-      `)
+    // private async setBoundsListener() {
+    //     // resize the WebContentsView's height when the toolbar height changes
+    //     // ex: when the bookmarks bar appears
+    //     await this.window.webContents.executeJavaScript(`
+    //     const {ipcRenderer} = require('electron');
+    //     const resizeObserver = new ResizeObserver(([{ contentRect }]) => {
+    //       ipcRenderer.send('resize-height');
+    //     });
+    //     const app = document.getElementById('app');
+    //     resizeObserver.observe(app);
+    //   `)
 
-        this.window.webContents.on("ipc-message", (e, message) => {
-            if (message === "resize-height") {
-                this.fixBounds()
-            }
-        })
-    }
+    //     this.window.webContents.on("ipc-message", (e, message) => {
+    //         if (message === "resize-height") {
+    //             this.fixBounds()
+    //         }
+    //     })
+    // }
 
     public destroy(id: number) {
         const view = this.views.get(id)
