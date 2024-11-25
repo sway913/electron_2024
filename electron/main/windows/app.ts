@@ -9,6 +9,19 @@ import { runMessagingService } from '../services';
 import { Application } from '../application';
 import { isNightly } from '..';
 import { ViewManager } from '../view-manager';
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+// 设置项目目录
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+process.env.APP_ROOT = path.join(__dirname, '../..')
+export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron')
+export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist')
+export const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL
+
+const preload = path.join(__dirname, '../preload/index.mjs')
+const indexHtml = path.join(RENDERER_DIST, 'index.html')
 
 export class AppWindow {
   public win!: BrowserWindow;
@@ -27,11 +40,8 @@ export class AppWindow {
       titleBarStyle: 'hiddenInset',
       backgroundColor: '#ffffff',
       webPreferences: {
-        plugins: true,
-        // TODO: enable sandbox, contextIsolation and disable nodeIntegration to improve security
-        nodeIntegration: true,
-        contextIsolation: false,
         javascript: true,
+        preload
       },
       trafficLightPosition: {
         x: 18,
@@ -147,18 +157,12 @@ export class AppWindow {
       Application.instance.windows.current = undefined;
     });
 
-    // this.webContents.openDevTools({ mode: 'detach' });
-
-    (async () => {
-      if (process.env.NODE_ENV === 'development') {
-        this.webContents.openDevTools({ mode: 'detach' });
-        await this.win.loadURL('http://localhost:4444/app.html');
-      } else {
-        await this.win.loadURL(
-          join('file://', app.getAppPath(), 'build/app.html'),
-        );
-      }
-    })();
+    if (VITE_DEV_SERVER_URL) {
+      this.win.loadURL(VITE_DEV_SERVER_URL)
+      this.win.webContents.openDevTools()
+    } else {
+      this.win.loadFile(indexHtml)
+    }
 
     this.win.on('enter-full-screen', async () => {
       this.send('fullscreen', true);

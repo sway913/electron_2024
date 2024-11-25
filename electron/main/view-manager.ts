@@ -79,7 +79,7 @@ export class ViewManager extends EventEmitter {
             this.clear()
         })
 
-        this.setBoundsListener()
+        // this.setBoundsListener()
     }
 
     public get selected() {
