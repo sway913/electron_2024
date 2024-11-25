@@ -34,6 +34,12 @@ export default defineConfig(({ command }) => {
             }
           },
           vite: {
+            resolve: {
+              alias: {
+                '@': path.join(__dirname, 'src'),
+                '~': path.join(__dirname, 'electron'),
+              },
+            },
             build: {
               sourcemap,
               minify: isBuild,
