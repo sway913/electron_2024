@@ -1,5 +1,4 @@
-import { ITheme } from '~/interfaces';
-import { BLUE_500 } from './colors';
+import { ITheme } from '@/interfaces/theme';
 
 export const lightTheme: ITheme = {
   'titlebar.backgroundColor': '#e0e0e0', // Lightened titlebar color
@@ -27,7 +26,7 @@ export const lightTheme: ITheme = {
   'pages.navigationDrawer1.backgroundColor': '#f5f5f5',
   'pages.navigationDrawer2.backgroundColor': '#fafafa',
 
-  accentColor: BLUE_500,
+  accentColor: '#fafafa',
   backgroundColor: '#fff',
 };
 
@@ -58,5 +57,5 @@ export const darkTheme: ITheme = {
   'pages.navigationDrawer2.backgroundColor': 'rgba(255, 255, 255, 0.05)',
 
   backgroundColor: '#1c1c1c',
-  accentColor: BLUE_500,
+  accentColor: '#1c1c1c',
 };

@@ -159,7 +159,7 @@ export class AppWindow {
 
     if (VITE_DEV_SERVER_URL) {
       this.win.loadURL(VITE_DEV_SERVER_URL)
-      this.win.webContents.openDevTools()
+      // this.win.webContents.openDevTools()
     } else {
       this.win.loadFile(indexHtml)
     }

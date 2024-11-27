@@ -17,7 +17,7 @@ export const DialogBaseStyle = styled.div`
   position: relative;
 
   ${({ theme }: { theme?: ITheme }) => css`
-    background-color: ${theme?.['dialog.backgroundColor'] || 'defaultColor'}; 
+    background-color: ${theme['dialog.backgroundColor']};
   `}
 `;
 
@@ -34,3 +34,15 @@ export const DialogStyle = styled(DialogBaseStyle)`
   animation: 0.15s ease-out 0s 1 fadeIn;
 `;
 
+export const PersistentDialogStyle = styled(DialogBaseStyle)`
+  ${({
+    visible,
+    hideTransition,
+  }: {
+    visible: boolean;
+    hideTransition?: boolean;
+  }) => css`
+    transition: ${!visible && !hideTransition ? 'none' : DIALOG_TRANSITION};
+    opacity: ${visible ? 1 : 0};
+  `}
+`;
